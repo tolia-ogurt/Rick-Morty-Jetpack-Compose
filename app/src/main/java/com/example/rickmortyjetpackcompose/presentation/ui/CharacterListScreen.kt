@@ -29,12 +29,8 @@ import com.example.rickmortyjetpackcompose.data.model.CharacterModel
 import com.example.rickmortyjetpackcompose.presentation.viewmodel.CharacterViewModel
 import org.koin.androidx.compose.koinViewModel
 
-
 @Composable
-fun CharacterListScreen(
-    navController: NavHostController,
-    viewModel: CharacterViewModel = koinViewModel()
-) {
+fun CharacterListScreen(navController: NavHostController, viewModel: CharacterViewModel = koinViewModel()) {
     val characters by viewModel.characters.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
     val errorMessage by viewModel.errorMessage.observeAsState()
@@ -55,29 +51,25 @@ fun CharacterListScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(characters) { character ->
-                    CharacterItem(character) {
-                        navController.navigate("characters/${character.id}")
-                    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(characters) { character ->
+                CharacterItem(character) {
+                    navController.navigate("characters/${character.id}")
                 }
             }
         }
 
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
+
         errorMessage?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+            Text(text = it, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
         }
     }
 }

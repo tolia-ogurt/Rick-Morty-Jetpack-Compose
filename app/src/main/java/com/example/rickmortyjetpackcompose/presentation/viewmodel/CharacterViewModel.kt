@@ -25,19 +25,27 @@ class CharacterViewModel(
 
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> get() = _errorMessage
-    private var isLastPage = false
     private var currentPage = 1
+    private var isLastPage = false
 
     init {
-        loadCharacters(currentPage)
+        loadNextPage()
     }
 
-    fun loadCharacters(page: Int) {
+    fun loadNextPage() {
+        if (_isLoading.value == true || isLastPage) return
+
+        _isLoading.value = true
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
             try {
-                _characters.value = getCharactersUseCase(page)
+                val newCharacters = getCharactersUseCase(currentPage)
+                if (newCharacters.isEmpty()) {
+                    isLastPage = true
+                } else {
+                    val updatedCharacters = _characters.value.orEmpty() + newCharacters
+                    _characters.value = updatedCharacters
+                    currentPage++
+                }
             } catch (e: Exception) {
                 _errorMessage.value = e.message
             } finally {
@@ -57,13 +65,6 @@ class CharacterViewModel(
             } finally {
                 _isLoading.value = false
             }
-        }
-    }
-
-    fun loadNextPage() {
-        if (!isLastPage) {
-            currentPage++
-            loadCharacters(currentPage + 1)
         }
     }
 }
